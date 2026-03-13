@@ -6,7 +6,7 @@ This project explores 100K rows of e-commerce transactions in Brazil using DuckD
 - Download at: https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce/data
 
 
-## 📁 Files
+## Files
 - `brazil_ecom.db` — the DuckDB file you can open with `duckdb brazil_ecom.db --ui`
 - `data/` — contains the raw CSV files from Kaggle
 - `notebooks/` —  SQL code in notebook format
