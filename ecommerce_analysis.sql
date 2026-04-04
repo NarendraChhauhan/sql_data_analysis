@@ -416,65 +416,11 @@ ORDER BY avg_delivery_days DESC
 LIMIT 10;   -- slowest-delivery cities
 
 
--- ##############################
--- KPI 3 · Order vs. Revenue Share by City
--- ##############################
 
 
--- Spot “high-order-count but low-revenue” states (or vice-versa) to adjust pricing or product mix.
-
--- 1️⃣  Order count and revenue per city
-
-WITH city_stats AS (
-    SELECT
-        g.geolocation_city                   AS city,
-        COUNT(DISTINCT o.order_id)           AS orders,
-        SUM(oi.price)                        AS revenue
-    FROM clean_orders o
-    JOIN clean_order_items oi ON o.order_id = oi.order_id
-    JOIN customers        c  ON o.customer_id = c.customer_id
-    JOIN geolocation      g  ON c.customer_zip_code_prefix = g.geolocation_zip_code_prefix
-    GROUP BY city
-),
-
--- 2️⃣  National totals (all cities)
-  
-totals AS (
-    SELECT
-        SUM(orders)  AS nat_orders,
-        SUM(revenue) AS nat_revenue
-    FROM city_stats
-)
-
--- 3️⃣  Share percentages per city
-  
-SELECT
-    s.city,
-    ROUND(100.0 * s.orders  / t.nat_orders , 2) AS order_share_pct,
-    ROUND(100.0 * s.revenue / t.nat_revenue, 2) AS revenue_share_pct
-FROM city_stats s
-CROSS JOIN totals t
-ORDER BY revenue_share_pct DESC;
 
 
--- A CROSS JOIN creates a Cartesian product — every row in the first table gets combined with every row in the second table.
--- Since totals is a signel row CTE (only contains nat_orders and nat_revenue)
--- We use CROSS JOIN to add the nat_orders and nat_revenue columns to every row from city_stats.
--- CROSS JOIN does: it merges each row from city_stats with the single-row result from totals
 
-
-/*
-
-✅ When is CROSS JOIN safe?
-It’s safe when:
-
-One of the tables has exactly one row, like in your case (totals)
-
-You intend to apply a global value to each row
-
-If totals had more than one row, the result would explode (e.g., 100 cities × 10 total rows = 1,000 rows — not what you want).
-
-*/
 
 
 
